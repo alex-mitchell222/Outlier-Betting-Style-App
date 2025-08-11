@@ -147,3 +147,17 @@ def player_gamelogs(
     with engine.connect() as conn:
         rows = conn.execute(text(sql), params).mappings().all()
         return [dict(r) for r in rows]
+
+@app.get("/players/search")
+def players_search(q: str, limit: int = 20):
+    sql = """
+      SELECT person_id,
+             (first_name || ' ' || last_name) AS player_name
+      FROM players
+      WHERE (first_name || ' ' || last_name) ILIKE :q
+      ORDER BY player_name
+      LIMIT :limit;
+    """
+    with engine.connect() as conn:
+        rows = conn.execute(text(sql), {"q": f"%{q}%", "limit": limit}).mappings().all()
+        return [dict(r) for r in rows]
